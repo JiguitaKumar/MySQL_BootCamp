@@ -1,0 +1,66 @@
+// Getting the simple app functionalities to create the app
+var express = require('express');
+var app = express();
+
+
+// Connection to MySQL
+var mysql = require('mysql');
+var connection = mysql.createConnection({
+	host: 'localhost',
+	user: 'learnwithcolt',
+	database: 'join_us'
+});
+
+// using EJS - HTML with Embedded JavaScript
+app.set("view engine", "ejs");
+
+
+// using body parser to intercept the new email in the form
+var bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({extended: true}));
+
+
+// Basic routings for the app to know what to return when each one of them is fetched
+app.get("/", function(req, res) {
+	
+	var q = "SELECT COUNT(*) AS count FROM users";
+	connection.query(q, function(err, results) {
+		if(err) throw err;
+		var count = results[0].count;
+		
+		//res.send("We have " + count + " users in our db");
+		res.render("home", {data: count});
+	});
+});
+
+app.get("/joke", function(req, res) {
+	res.send("<strong> Knock knock... </strong>");
+});
+
+app.get("/random_num", function(req, res) {
+	var number = Math.ceil(Math.random() * 10);
+	res.send("Your lucky number is: " + number);
+});
+
+
+// Getting the Server to be attentive to any requests from the Client
+app.listen(8080, function() {
+	console.log("Server running on 8080!");
+});
+
+
+// Post a new email in our db
+app.post("/register", function(req, res){
+	var email = req.body.email;
+	
+	
+	var person = {
+		email: req.body.email
+	};
+	var p = "INSERT INTO users (email) VALUES (" + req.body.email + ")";
+	connection.query(p, function(err, result) {
+		if(err) throw err;
+		res.redirect("/");
+	})
+	
+});
